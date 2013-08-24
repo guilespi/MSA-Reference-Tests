@@ -52,17 +52,17 @@
 
 (defn dialign
   [sequence-file file-name output-dir]
-  (println "Building dialign alignments...")
   (let [program (str dialign-path "/src/dialign2-2")
         data-dir (str dialign-path "/dialign2_dir")
         aligner (format "%s -fn ./%s/%s_dialign -msf %s" program output-dir file-name sequence-file)
         command (format "export DIALIGN2_DIR=%s;%s" data-dir aligner)
         response (exec-script (command))]
     (when (= "" (:out response))
-      (format "%s/%s_dialign.ms" output-dir file-name))))
+      (format "./%s/%s_dialign.ms" output-dir file-name))))
 
 (defn align-sequences
   [fastas algorithm]
+  (println "Align sequences using algorithm:" (str algorithm))
   (reduce (fn [hm a] 
             (let [key (get a 0) 
                   file-name (clojure.string/replace key #"/" "_")
@@ -86,7 +86,6 @@
 
 (defn tcoffee
   [sequence-file file-name output-dir]
-  (println "Building tcoffee alignments...")
   (let [tool tcoffee-path
         output-file (format "./%s/%s_tcoffee" output-dir file-name)
         parameters (format " %s -output=msf -run_name=%s" sequence-file output-file)
@@ -98,7 +97,6 @@
 (def poa-path (str basedir "tools/poaV2"))
 (defn poa 
   [sequence-file file-name output-dir]
-  (println "Building poa alignments...")
   (let [tool (str poa-path "/poa")
         output-file (format "./%s/%s_poa" output-dir file-name)
         matrix-file (str poa-path "/blosum80.mat")
@@ -113,7 +111,6 @@
 (def clustal-path (str basedir "tools/clustalw-2.1-macosx/clustalw2"))
 (defn clustalw2 
   [sequence-file file-name output-dir]
-  (println "Building clustalw2 alignments...")
   (let [tool clustal-path
         output-file (format "./%s/%s_clustalw2.msf" output-dir file-name)
         parameters (format " -INFILE=%s -ALIGN -QUIET -OUTFILE=%s -OUTPUT=GCG" sequence-file output-file)
@@ -141,67 +138,56 @@
 
 (defn calculate-results
   [fastas references algs]
-  (println "Exporting results to csv")
   (reduce (fn [hm f] 
             (let [key (get f 0)
-                  refer (get references key)
+                  refern (get references key)
                   row (reduce #(assoc %1 
                                  (get %2 0)
-                                 (calculate-bali-score refer (get (get %2 1) key))) {} algs)]
+                                 (calculate-bali-score refern (get (get %2 1) key))) {} algs)]
               (assoc hm key row))) {} fastas))
 
 (def export-keys [:referid 
                   :testid
                   :seqid 
-                  :tcoffee-sp
-                  :tcoffee-tc
-                  :tcoffee-time
-                  :poa-sp
-                  :poa-tc
-                  :poa-time
-                  :clustalw2-sp
-                  :clustalw2-tc
-                  :clustalw2-time
-                  :dialign-sp
-                  :dialign-tc
-                  :dialign-time])
+                  :algorithm
+                  :sp
+                  :tc
+                  :time])
 
 (defn save-results
   [results]
-  (with-open [wrtr (clojure.java.io/writer "./results/scores.csv")]
+  (println "Saving results")
+  (with-open [wrtr (clojure.java.io/writer "./results/scores.csv" :append false)]
     (.write wrtr (str (clojure.string/join "," (map #(str "\"" (name %) "\"") export-keys)) "\n"))
     (doseq [r results]
       (let [key (get r 0)
             scores (get r 1)
             [referid testid seqid] (clojure.string/split key #"/")
-            row {:tcoffee-sp (-> scores :tcoffee :sp-score)
-                 :tcoffee-tc (-> scores :tcoffee :tc-score)
-                 :tcoffee-time (-> scores :tcoffee :time)
-                 :poa-sp (-> scores :poa :sp-score)
-                 :poa-tc (-> scores :poa :tc-score)
-                 :poa-time (-> scores :poa :time)
-                 :clustalw2-sp (-> scores :clustalw2 :sp-score)
-                 :clustalw2-tc (-> scores :clustalw2 :tc-score)
-                 :clustalw2-time (-> scores :clustalw2 :time)
-                 :dialign-sp (-> scores :dialign :sp-score)
-                 :dialign-tc (-> scores :dialign :tc-score)
-                 :dialign-time (-> scores :dialign :time)
-                 :referid referid
-                 :testid testid
-                 :seqid seqid}
-            values (reduce (fn[v k] (conj v (str "\"" (get row k) "\""))) [] export-keys)
-            csv-row (str  (clojure.string/join "," values) "\n")]
-          (.write wrtr csv-row)))))
+            algs [:tcoffee :dialign :poa :clustalw2]]
+        (doseq [alg algs]
+          (let [row {:sp (-> scores alg :sp-score)
+                     :tc (-> scores alg :tc-score)
+                     :time (-> scores alg :time)
+                     :algorithm (name alg)
+                     :referid referid
+                     :testid testid
+                     :seqid seqid}
+                values (reduce (fn[v k] (conj v (str "\"" (get row k) "\""))) [] export-keys)
+                csv-row (str  (clojure.string/join "," values) "\n")]
+            (.write wrtr csv-row)))))))
 
 (defn alignments
   []
   (let [fastas (fasta-map)
-        dialign-res (align-sequences fastas dialign)
-        clustalw-res (align-sequences fastas clustalw2)
-        poa-res (align-sequences fastas poa)
-        tcoffee-res (align-sequences fastas tcoffee)
-        results (calculate-results fastas
-                                   (reference-map)
+        references (reference-map)
+        ;some fastas have no corresponding reference
+        valid-fastas (take 3 (select-keys fastas (keys references)))
+        dialign-res (align-sequences valid-fastas dialign)
+        clustalw-res (align-sequences valid-fastas clustalw2)
+        poa-res (align-sequences valid-fastas poa)
+        tcoffee-res (align-sequences valid-fastas tcoffee)
+        results (calculate-results valid-fastas
+                                   references
                                    {:dialign dialign-res
                                     :clustalw2 clustalw-res
                                     :poa poa-res
