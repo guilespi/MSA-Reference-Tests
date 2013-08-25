@@ -32,7 +32,7 @@ Programa
 ------------
 
 El programa Python se encuentra dentro del directorio `project` del entregable y está contenido dentro del archivo
-align.py. Puede a su vez encontrarse online [en github][gh py].
+align.py. Puede a su vez encontrarse publicado online [en github][gh py].
 
 Entrada
 ----------
@@ -123,10 +123,10 @@ Para esto se definió una estructura auxiliar del tipo árbol, que permite model
 
 ~~~~~~~~~~~~~~~~
 { 'match'  : None,
-   'insert' : None,
-   'delete' : None,
-   'val-a'  : None,
-   'val-b'  : None }
+  'insert' : None,
+  'delete' : None,
+  'val-a'  : None,
+  'val-b'  : None }
 ~~~~~~~~~~~~~~~~
 
 Donde match, insert y delete son nodos hijos del árbol y val-a y val-b son los dos valores del alineamiento para cada secuencia del par. Esto permite armar un árbol inverso donde la raíz del árbol es la última celda 
@@ -150,6 +150,14 @@ Sequences possible alignments tree:
 
 Cada nodo del árbol despliega la pareja de nucleótidos para cada secuencia y un código para indicar si fue match (=) insert(+) o delete(-). En el caso anterior donde se alinearon las secuencias ARYL y AARYL el árbol muestra claramente que se puede realizar el insert de la nueva A tanto en a primera como en la segunda posición obteniendo el mismo costo final.
 
+Adjuntos
+----------
+
+Los archivos relevantes para este informe son los siguientes
+
+* *needleman_wunsch/align.py*: Código fuente del alineamiento
+* *needleman_wunsch/blosum.txt*: Matriz blosum62 utilizada 
+* *needleman_wunsch/sequences.fasta*: Archivo de secuencias de ejemplo para la ejecución
 
 Problema 2, comparación de algoritmos de MSA
 =====================================
@@ -221,7 +229,7 @@ Estrategia
 -------------
 
 Para resolver el problema se desarrolló un script en el lenguaje Clojure con el propósito de ejecutar los distintos algoritmos contra las diferentes secuencias.
-El script se puede encontrar en el directorio `multiple_seq_aligner` del entregable y también publicado de forma abierta [en github][gh clj].
+El script se puede encontrar en el directorio `multiple_seq_aligner` del entregable y también fue publicado de forma abierta [en github][gh clj].
 
 El script itera por todos los archivos `fasta` disponibles en BaliBase2 
 
@@ -345,8 +353,8 @@ Mientras que bali_score2.c tiene definido como largo máximo solamente 1000:
 #define MAXLEN 1000
 ~~~~~~~~~~~~~~~~
 
-Esto da origen a problemas de stock overflow y corrupción de memoria cuando se ejecuta la comparación, ya que en la función readmsf donde se
-"rearman" las secuencias el vector `seq` está inicializado en `MAXLEN+1`.
+Esto da origen a problemas de stack overflow y corrupción de memoria cuando se ejecuta la comparación, ya que en la función `readmsf` donde se
+"rearman" las secuencias el vector `seq` está inicializado en `MAXLEN+1`, y `seq[len++]` escribe por sobre la memoria reservada en el stack.
 
 ~~~~~~~~~~~~~~~~
 void readmsf(FILE *fin) {
@@ -365,7 +373,7 @@ for(i=k;i<=MAXLINE;i++) {
 
 Esto fue solucionado como forma de asegurar que se estaba usando el mismo programa de scoring que la base de referencia.
 
-**3. En BaliBase2 Los alineamientos de referencia contienen diferentes secuencia que los fasta publicados**
+**3. En BaliBase2 los alineamientos de referencia contienen diferentes secuencia que los fasta publicados**
 
 Para muchos archivos fasta proporcionados en BaliBase2 las secuencias contenidas en el mismo, no coinciden con las secuencias publicadas en los alineamientos de referencia.
 Un caso concreto es el del archivo `/ref6/test_1a/dead_ref6.tfa`donde contiene las 7 secuencias
@@ -411,12 +419,12 @@ Para el presente trabajo se corrigieron los errores en balibase2 y se generaron 
 Análisis
 -----------
 
-Para el análisis de resultados se importo el archivo `csv` en R y para las distintos conjuntos jerárquicos de referencia provistos por balibase, se analizó:
+Para el análisis de resultados se importo el archivo `csv` en `R` y para las distintos conjuntos jerárquicos de referencia provistos por BaliBase2, se analizó:
 
-* La diferencia de escores según balibase para los distintos algoritmos
+* La diferencia de scores según balibase2 para los distintos algoritmos
 * El tiempo de ejecución de los distintos algoritmos en las distintas referencias
 
-El script básico de análisis en R es el siguiente:
+El script básico de análisis en `R` es el siguiente:
 
 ~~~~~~~~~~~~~~~~
 scores <- read.csv("multiple_seq_aligner/results/scores.csv")
@@ -428,7 +436,7 @@ bwplot(algorithm~time, data=ref1, panel=panel.bpplot, datadensity=TRUE,
              ylab="algoritmo", xlab="tiempo de ejecución")
 ~~~~~~~~~~~~~~~~
 
-Donde la función bwplot nos permite visualizar no solamente el promedio para cada resultado sino que la propia distribución de los mismos.
+Donde la función `bwplot` nos permite visualizar no solamente el promedio para cada resultado sino que la propia distribución de los mismos.
 
 **Referencia 1**
 
@@ -484,6 +492,18 @@ Vale aclarar que los distintos problemas encontrados tanto con las secuencias co
 los datos y algoritmos publicados en BaliBase2, por lo que si bien el ejercicio sirve los datos deben tomarse con cautela. Según lo observado los mayores problemas se
 dan en las referencias 6, 7 y 8 agregadas a BaliBase V2, inclusive bali_score falla con dichas secuencias, por lo que se presume dichas referencias 
 son las menos confiables en su proceso de publicación.
+
+Adjuntos
+----------
+
+Los archivos relevantes para este informe son los siguientes
+
+* *multiple_seq_aligner/doc/informe.pdf*:El informe en formato pdf.
+* *multiple_seq_aligner/doc/informe.md*: El informe en formato markdown/latex para ser procesado con `pandoc`.
+* *multiple_seq_aligner/src/multiple_seq_aligner/core.clj*: Código fuente del script de ejecución.
+* *multiple_seq_aligner/results/scores.csv*: Resultados obtenidos contra balibase2.
+* *multiple_seq_aligner/results/alignments.tgz*: Alineamientos obtenidos en la ejecución.
+* *multiple_seq_aligner/resources/analyzer.r*: Script de análisis en `R`.
 
 Referencias:
 -----------------
