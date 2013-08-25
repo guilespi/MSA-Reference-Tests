@@ -1,3 +1,20 @@
+
+
+
+
+
+
+
+
+
+
+\centerline{\huge \bfseries Bioinformática I}
+\centerline{Guillermo Winkler}
+\centerline{guillermo.winkler@gmail.com}
+\centerline{2588122-1}
+
+\newpage
+
 Problema 1, alineamiento de secuencias
 ================================
 
@@ -168,18 +185,18 @@ a considerarse nuevamente. En contraste, los métodos iterativos pueden volver a
 
 De los más populares de la familia de alineamientos progresivos, se utilizó la versión `weighted`, donde pesos individuales se le asignan a cada secuencia en un
 alineamiento parcial de forma tal de bajarle el peso a las secuencias casi duplicadas y subirles el peso a las más divergentes.
-Luego las matrices de substitución de aminoácidos son cambiadas en las diferentes etapas de acuerdo a la divergencia de las secuencias siendo alineadas [14].
+Luego las matrices de substitución de aminoácidos son cambiadas en las diferentes etapas de acuerdo a la divergencia de las secuencias siendo alineadas. [14]
 
-El programa fue bajado [del siguiente sitio][clustalw2].
+El programa fue bajado [del siguiente sitio de clustal][clustalw2].
 
 **Dialign**
 
 Dialign es uno de los algoritmos iterativos.
 
-Este algoritmo toma un encare inusual de enfocarse en alineamientos locales entre sub-segmentos o secuencias de motivos sin introducir penalización por gaps [15].
+Este algoritmo toma un encare inusual de enfocarse en alineamientos locales entre sub-segmentos o secuencias de motivos sin introducir penalización por gaps. [15]
 El alineamiento de motivos individuales es entonces obtenido con una representación matricial similar a una dot-matrix en un alineamiento de a pares.
 
-El programa fue bajado [del siguiente sitio][dialign].
+El programa fue bajado [del siguiente sitio de dialign][dialign].
 
 **Poa**
 
@@ -188,7 +205,7 @@ combinaciones de gaps, matches y mismatches para determinar el alineamiento múl
 
 Los modelos basados en HMM ofrecen una ventaja significante en costo computacional especialmente en secuencias que tienen regiones superpuestas. [16]
 
-El programa fue bajado [del siguiente sitio][poa].
+El programa fue bajado [del siguiente sitio de poa][poa].
 
 **T-Coffee**
 
@@ -197,7 +214,7 @@ Es otro alineamiento progresivo bastante común, mas lento que Clustal y sus der
 T-Coffee utiliza la salida de Clustal y la de otro programa de alineamiento local llamado LALIGN, que encuentra múltiples regiones de alineamiento local entre dos secuencias.
 El alineamiento resultante y árbol filogenético son usados como guía para producir factores de peso mas exactos.
 
-El programa fue bajado [del siguiente sitio][tcoffee].
+El programa fue bajado [del siguiente sitio de tcoffee][tcoffee].
 
 
 Estrategia
@@ -247,7 +264,8 @@ Cada programa se define en una función diferente donde se configura según las 
   (println "Building dialign alignments...")
   (let [program (str dialign-path "/src/dialign2-2")
         data-dir (str dialign-path "/dialign2_dir")
-        aligner (format "%s -fn ./%s/%s_dialign -msf %s" program output-dir file-name sequence-file)
+        aligner (format "%s -fn ./%s/%s_dialign -msf %s" 
+                                    program output-dir file-name sequence-file)
         command (format "export DIALIGN2_DIR=%s;%s" data-dir aligner)
         response (exec-script (command))]
     (when (= "" (:out response))
@@ -287,19 +305,38 @@ Dicho archivo es utilizado en R para el análisis de los resultados.
 Problemas encontrados
 ------------
 
-1. BaliBase1 no contiene las secuencias originales
+**1. BaliBase1 no contiene las secuencias originales**
 
 Si bien en la letra del obligatorio se sugiere utilizar BaliBase1 el archivo publicado de dicha base de datos no contiene las secuencias fasta originales, sino que solamente contiene
-los alineamientos de referencia, haciendo imposible la ejecución de los distintos algoritmos para su posterior comparación.
+los alineamientos de referencia.
 
-2. bali_score2 falla con segmentation fault por los largos de secuencia
+Si bien es posible reconstruir los fasta originales a partir de los alineamientos de referencia haciendo copy/paste con los alineamientos, al 
+ser casi 300 fastas con multiples secuencias en cada uno implica o bien un proceso tedioso y propenso a errores o implica desarrollar
+un nuevo script para hacer esta tarea.
+
+En caso que se desee realizar esta tarea de "recomponer" secuencias se podría utilizar una estrategia similar a la de la función `readmsf` del
+archivo bali_score.c.
+
+**2. bali_score2 falla con segmentation fault por los largos de secuencia**
 
 El programa bali_score, que varía para las diferentes versiones de BaliBase falla con un error de acceso a memoria leyendo los propios alineamientos de referencia de BaliBase2.
 
-Por ejemplo la secuencia `O60072_2` en el archivo `BAliBASE2/references/ref6/test_1a/dead_ref6.msf` es de largo 1423
+Por ejemplo la secuencia `O60072_2` en el archivo `/ref6/test_1a/dead_ref6.msf` es de largo 1423
 
 ~~~~~~~~~~~~~~~~
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------LPITALHDP-VLEGICAK-RFSFFNAVQTQFFHTIYHTDTNIFVGAPTGSGKTMAAELATWRALHNYP-----------------KSKVVYIAPMKALVKERVKDWGHRLVEPMGISMIELTG-DTNPDVKAVTNANIIITTPEKWDGITRSW-KSRKYVQDVSLIILDEIHLLGSD-RGPVLEMIVSRMNYVASQTNKKVRVLGLSTAVANANDLANWLNI--RDGLFNFRHSVRPVPLEIYIDGFPGR-AYCPRMMSMNKPAFQAIKTHS---PTQPVLIFVSSRRQTRLTAKDLIAFCGLEDNPRRFLYM--DEEELE--MIVSEVEDKSLKLALPFGIALHHAGLTENDRKISEELFVNNKVQILIATSTLAWGVNTPAHLVIVKGTEYYDAKIGGYKDMDLTDVLQMLGRAGRPQFDNS-GVARIFVQDIKKSFYKHFLHSGFPVESYLHKVLDNHLNAEIATGTIDCIQGAMDFLTCTYFYRRVHQNPVYYGADGDDQKSIDTYLSKLVVTAFNELEKSACIYRVN----------------EETYAPTTLGRIVSYYYLFHTTIRNFVQKITENAEFDLALQLLAEASEFDDLAIRHNEDLINIEINKSLKYSAAC-----LNLPMVDAHVKAFILTQAHMARLKLPVDDYVTDTSTVLDQVIRIIQSYIDVSAELGYSHVCLQYISLMQCLKQACYPSEIYRASLPGLNASSEKEARD-----YLNKFAGNKTDELYQMLCNDPNVFDIESLVNSLISYPKMNI-------------------EVSQSSSDKLLLY---LRRLNQPLNP-------------DFYIFAPLFPKPQ-SEGFFVLIIDSETQELFAIRRASFAGRRNDDSIRLSLRISMDIPPTCRNRNVKVMVVCDGYPLIYEHKIVLMI-------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------LPITALHDP-VLEGICAK-R
+FSFFNAVQTQFFHTIYHTDTNIFVGAPTGSGKTMAAELATWRALHNYP-----------------KSKVVYIAPMKALVKERVKDWGHRLVEPMG
+ISMIELTG-DTNPDVKAVTNANIIITTPEKWDGITRSW-KSRKYVQDVSLIILDEIHLLGSD-RGPVLEMIVSRMNYVASQTNKKVRVLGLST
+AVANANDLANWLNI--RDGLFNFRHSVRPVPLEIYIDGFPGR-AYCPRMMSMNKPAFQAIKTHS---PTQPVLIFVSSRRQTRLTAKDLIA
+FCGLEDNPRRFLYM--DEEELE--MIVSEVEDKSLKLALPFGIALHHAGLTENDRKISEELFVNNKVQILIATSTLAWGVNTPAHLVIVKGT
+EYYDAKIGGYKDMDLTDVLQMLGRAGRPQFDNS-GVARIFVQDIKKSFYKHFLHSGFPVESYLHKVLDNHLNAEIATGTIDCIQGAMDF
+LTCTYFYRRVHQNPVYYGADGDDQKSIDTYLSKLVVTAFNELEKSACIYRVN----------------EETYAPTTLGRIVSYYYLFHTTIRNFVQKI
+TENAEFDLALQLLAEASEFDDLAIRHNEDLINIEINKSLKYSAAC-----LNLPMVDAHVKAFILTQAHMARLKLPVDDYVTDTSTVLDQVIR
+IIQSYIDVSAELGYSHVCLQYISLMQCLKQACYPSEIYRASLPGLNASSEKEARD-----YLNKFAGNKTDELYQMLCNDPNVFDIESLVNS
+LISYPKMNI-------------------EVSQSSSDKLLLY---LRRLNQPLNP-------------DFYIFAPLFPKPQ-SEGFFVLIIDSETQELFAIRRASFAGRR
+NDDSIRLSLRISMDIPPTCRNRNVKVMVVCDGYPLIYEHKIVLMI-------------------
 ~~~~~~~~~~~~~~~~
 
 Mientras que bali_score2.c tiene definido como largo máximo solamente 1000:
@@ -312,10 +349,10 @@ Esto da origen a problemas de stock overflow y corrupción de memoria cuando se 
 
 Esto fue solucionado como forma de asegurar que se estaba usando el mismo programa de scoring que la base de referencia.
 
-3. En BaliBase2 Los alineamientos de referencia contienen diferentes secuencia que los fasta publicados
+**3. En BaliBase2 Los alineamientos de referencia contienen diferentes secuencia que los fasta publicados**
 
 Para muchos archivos fasta proporcionados en BaliBase2 las secuencias contenidas en el mismo, no coinciden con las secuencias publicadas en los alineamientos de referencia.
-Un caso concreto es el del archivo `BAliBASE2/fastas/ref6/test_1a/dead_ref6.tfa`donde contiene las 7 secuencias
+Un caso concreto es el del archivo `/ref6/test_1a/dead_ref6.tfa`donde contiene las 7 secuencias
 
 >BRR2_YEAST
 >O48534
@@ -325,7 +362,7 @@ Un caso concreto es el del archivo `BAliBASE2/fastas/ref6/test_1a/dead_ref6.tfa`
 >P53327
 >O60072
 
-Mientras que los aineamientos de referencia en `BAliBASE2/references/ref6/test_1a/dead_ref6.msf` son 14:
+Mientras que los aineamientos de referencia en `/ref6/test_1a/dead_ref6.msf` son 14:
 
 ~~~~~~~~~~~~~~~~
 MSF: 1423  Type: P    Check:   550   ..
@@ -349,8 +386,11 @@ MSF: 1423  Type: P    Check:   550   ..
 Lo que genera el siguiente error del bali_score al querer compararlos:
 
 ~~~~~~~~~~~~~~~~
-Error: 14 sequences in /BAliBASE2/references/ref6/test_1a/dead_ref6.msf and 7 in ./results/ref6_test_1a_dead_ref6_clustalw2.msf
+Error: 14 sequences in /ref6/test_1a/dead_ref6.msf 
+and 7 in ./results/ref6_test_1a_dead_ref6_clustalw2.msf
 ~~~~~~~~~~~~~~~~
+
+Para el presente trabajo se corrigieron los errores en balibase2 y se generaron los resultados contra dichos alineamientos de referencia.
 
 Análisis
 -----------
@@ -366,40 +406,50 @@ El script básico de análisis en R es el siguiente:
 scores <- read.csv("multiple_seq_aligner/results/scores.csv")
 scores <- na.omit(scores)
 ref1 <- subset(scores, scores$referid == "ref1")
-bwplot(algorithm~sp, data=ref1, panel=panel.bpplot, datadensity=TRUE,ylab="algoritmo", xlab="score")
-bwplot(algorithm~time, data=ref1, panel=panel.bpplot, datadensity=TRUE,ylab="algoritmo", xlab="tiempo de ejecución")
+bwplot(algorithm~sp, data=ref1, panel=panel.bpplot, datadensity=TRUE,
+             ylab="algoritmo", xlab="score")
+bwplot(algorithm~time, data=ref1, panel=panel.bpplot, datadensity=TRUE,
+             ylab="algoritmo", xlab="tiempo de ejecución")
 ~~~~~~~~~~~~~~~~
 
 Donde la función bwplot nos permite visualizar no solamente el promedio para cada resultado sino que la propia distribución de los mismos.
 
 **Referencia 1**
+
 La referencia 1 está compuesta por secuencias equidistantes con varios niveles de conservación.
 Para este caso observamos que si bien los algoritmos de mayor costo computacional obtienen mejores resultados, todos perforan relativamente bien.
 
-![resultados referencia 1](images/scores_ref1.png "Resultados para referencia 1")
+![resultados referencia 1](images/scores_ref1.png "Resultados para referencia 1")\
 
 **Referencia 4**
+
 La referencia 4 está dividida en dos subcategorías conteniendo elementos de hasta 20 secuencias incluyendo extensiones N/C terminales de hasta
 400 residuos, e inserciones hasta 100 residuos.
 
 En este caso observamos como el score de alineamiento es menor que con secuencias equidistantes de la referencia 1.
-![resultados referencia 4](images/scores_ref4.png "Resultados para referencia 4")
+
+![resultados referencia 4](images/scores_ref4.png "Resultados para referencia 4")\
 
 **Referencia 8**
+
 Los alineamientos de referencia número 8 se agregaron para la versión 2 de BaliBase y contiene dos problemas diferentes pero relacionados.
 La referencia 8 contiene 5 familias de proteínas en donde el orden secuencial de los dominios no es preservado.
 
 En este caso también observamos peores resultados.
-![resultados referencia 8](images/scores_ref8.png "Resultados para referencia 8")
+
+![resultados referencia 8](images/scores_ref8.png "Resultados para referencia 8")\
 
 **Tiempos de ejecución**
+
 Dentro de lo esperado para los tiempos de ejecución los algoritmos T-Coffee y Dialign son consistentemente mas costosos que Poa y ClustalW.
 
 Tiempos en referencia 2:
-![tiempos referencia 2](images/times_ref2.png "Tiempos para referencia 2")
+
+![tiempos referencia 2](images/times_ref2.png "Tiempos para referencia 2")\
 
 Tiempos en referencia 8:
-![tiempos referencia 8](images/times_ref8.png "Tiempos para referencia 8")
+
+![tiempos referencia 8](images/times_ref8.png "Tiempos para referencia 8")\
 
 
 Conclusiones
@@ -415,8 +465,18 @@ mas similares son se obtienen mejores resultados (referencia 1).
 Algoritmos como T-Coffee si bien generan buenos alineamientos son solamente aconsejables para alineamientos chicos por su alto costo computacional. 
 
 Vale aclarar que los distintos problemas encontrados tanto con las secuencias como con el programa de scoring genera ciertas dudas sobre la prolijidad y confiabilidad de
-los datos y algoritmos publicados en BaliBase2, por lo que si bien el ejercicio sirve los datos deben tomarse con cautela.
+los datos y algoritmos publicados en BaliBase2, por lo que si bien el ejercicio sirve los datos deben tomarse con cautela. Según lo observado los mayores problemas se
+dan en las referencias 6, 7 y 8 agregadas a BaliBase V2, inclusive bali_score falla con dichas secuencias, por lo que se presume dichas referencias 
+son las menos confiables en su proceso de publicación.
 
+Referencias:
+-----------------
+
+[14] Julie D.Thompson, Desmond G.Higgins and Toby J.Gibson "CLUSTAL W: improving the sensitivity of progressive multiple sequence alignment through sequence weighting"
+
+[15] Brudno M, Chapman M, Göttgens B, Batzoglou S, Morgenstern B (2003). "Fast and sensitive multiple alignment of large genomic sequences". BMC Bioinformatics 4: 66.
+
+[16] Mount DM. (2004). Bioinformatics: Sequence and Genome Analysis 2nd ed. Cold Spring Harbor Laboratory Press: Cold Spring Harbor, NY
 
 [gh py]: https://github.com/guilespi/bio-sequence-alignments
 [gh clj]: https://github.com/guilespi/MSA-Reference-Tests
@@ -424,8 +484,5 @@ los datos y algoritmos publicados en BaliBase2, por lo que si bien el ejercicio 
 [poa]: http://www.mybiosoftware.com/alignment/719
 [clustalw2]: http://www.clustal.org/clustal2/
 [dialign]: http://dialign.gobics.de/
-[14]: CLUSTAL W: improving the sensitivity of progressive... http://www.ncbi.nlm.nih.gov/pmc/articles/PMC308517/pdf/nar00046-0131.pdf
-[15] : Brudno M, Chapman M, Göttgens B, Batzoglou S, Morgenstern B (2003). "Fast and sensitive multiple alignment of large genomic sequences". BMC Bioinformatics 4: 66.
-[16]: Mount DM. (2004). Bioinformatics: Sequence and Genome Analysis 2nd ed. Cold Spring Harbor Laboratory Press: Cold Spring Harbor, NY
 
 
