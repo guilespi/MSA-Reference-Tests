@@ -3,8 +3,7 @@ Problema 1, alineamiento de secuencias
 
 Resumen
 -------------
-Para el problema 1 se desarrolló un programa en Pyhton que realiza alineamiento de hasta dos secuencias utilizando el
-algoritmo Needleman-Wunsch.
+Para el problema 1 se desarrolló un programa en Pyhton que realiza alineamiento de hasta dos secuencias utilizando el algoritmo Needleman-Wunsch.
 
 Se optó por realizar la tarea opcional de considerar costos de apertura de gaps utilizando affine gaps, donde se utilizan
 dos matrices auxiliares para poder considerar por separado el costo de la apertura de un nuevo gap, versus el costo
@@ -15,8 +14,8 @@ Como output del programa se obtiene el mejor score encontrado y un árbol con to
 Programa
 ------------
 
-El programa python se encuentra dentro del directorio `project` del entregable y está contenido dentro del archivo
-align.py.
+El programa Python se encuentra dentro del directorio `project` del entregable y está contenido dentro del archivo
+align.py. Puede a su vez encontrarse online [en github][gh py].
 
 Entrada
 ----------
@@ -24,9 +23,9 @@ Entrada
 Como entrada el programa espera dos archivos, uno con las secuencias a alinear en formato fasta y otro con
 la matriz de costos de alineamiento.
 
-Si bien los nombres de los archivos están fijos en el código modificar el programa para recibirlos por parámetro es trivial.
+Si bien los nombres de los archivos están fijos en el código, modificar el programa para recibirlos por parámetro es trivial.
 
---------
+~~~~~~~~~~~~~~~~
 def main():
     sequences = read_sequences('sequences.fasta')
     score_matrix = read_matrix('blosum.txt')
@@ -34,93 +33,93 @@ def main():
     sequence_b = sequences[1]
     result = needleman_wunsch(sequence_a, sequence_b, score_matrix)
 ...
---------
+~~~~~~~~~~~~~~~~
 
-La matriz blosum.txt que se adjunta es un diccionario python donde la clave de cada entrada es el par de nucleótidos y el valor 
+La matriz blosum.txt que se adjunta es un diccionario Python donde la clave de cada entrada es el par de nucleótidos y el valor 
 es el costo asociado a dicho par.
 
---------
+~~~~~~~~~~~~~~~~
 {
 ('W', 'F') : 1, ('L', 'R') : -2, ('S', 'P') : -1, ('V', 'T') : 0,
 ('Q', 'Q') : 5, ('N', 'A') : -2, ('Z', 'Y') : -2, ('W', 'R') : -3,
 ('Q', 'A') : -1, ('S', 'D') : 0, ('H', 'H') : 8, ('S', 'H') : -1,
 ('H', 'D') : -1, ('L', 'N') : -3, ('W', 'A') : -3, ('Y', 'M') : -1,
 ….
------
+~~~~~~~~~~~~~~~~
 
 El archivo fasta es estándar, le lectura del mismo se realizó desde cero sin utilizar la librería SeqIO. En caso que haya mas de dos secuencias en el mismo se utilizarán las dos primeras.
-------
+
+~~~~~~~~~~~~~~~~
 >Seq1
 ARYL
 >Seq2
 AARYL
-------
+~~~~~~~~~~~~~~~~
 
 Estrategia de Solución
 ----------------------------
 
 Para resolver el problema se utilizó el algoritmo clásico con las siguientes particularidades:
 
-1 Matriz de caminos
+**1 Matriz de caminos**
 
-Para poder devolver la lista de caminos de costo óptimo(puede haber más de uno), a medida que se calculan los scores
-se debe ir marcando las celdas origen de como se obtiene dicho mejor score.
+Para poder devolver la lista de caminos de costo óptimo(puede haber más de uno), a medida que se calculan los scores se debe ir marcando las celdas origen de como se obtiene dicho mejor score.
 
 Esto se resolvió utilizando una matriz auxiliar donde en cada celda se guardan los valores de las "flechas" codificados en potencias de 2.
 
-Como en cada celda puedo tener 3 valores posibles que se pueden dar en simultáneo, deletion, insertion, match, se codificaron los valores de la siguiente forma:
+Como en cada celda puedo tener 3 valores posibles que se pueden dar en simultáneo - deletion, insertion y match - se codificaron los valores de la siguiente forma:
 
----------
+~~~~~~~~~~~~~~~~
 #definitions for building paths
 MATCH_PATH=2
 INSERT_PATH=4
 DELETE_PATH=8
--------
+~~~~~~~~~~~~~~~~
 
-De esta manera, si una celda de la matriz auxiliar contiene el valor 6, se sabe que se llega por match y por insert. Un output de ejemplo de dicha matriz es el siguiente:
+De esta manera, si una celda de la matriz auxiliar contiene el valor 6, se sabe que se llega por match y por insert. Un resultado de ejemplo de dicha matriz es el siguiente:
 
--------
-
+~~~~~~~~~~~~~~~~
 Paths Matrix:
 [[ nan  nan  nan  nan  nan  nan]
  [ nan   2.   6.   4.   4.   4.]
  [ nan   8.   2.   2.   4.   4.]
  [ nan   8.   8.   8.   2.   4.]
  [ nan   8.  10.   8.   8.   2.]]
-----
+~~~~~~~~~~~~~~~~
 
-2 Armado de caminos
+**2 Armado de caminos**
 
-Junto con la matriz anterior y la matriz de resultados
+Junto con la matriz anterior, y la matriz de resultados de alineamiento:
 
------
+~~~~~~~~~~~~~~~~
 Alignment Matrix:
 [[  0.  -3.  -4.  -5.  -6.  -7.]
  [ -3.   4.   1.   0.  -1.  -2.]
  [ -4.   1.   3.   6.   3.   2.]
  [ -5.   0.   0.   3.  13.  10.]
  [ -6.  -1.  -1.   2.  10.  17.]]
--------
+~~~~~~~~~~~~~~~~
 
 Se debe armar el conjunto de mejores caminos que dan el conjunto de alineaciones con el score óptimo.
 
-Para esto se definió una estructura auxiliar del tipo árbol que permitiera modelar los distintos paths en una única estructura de datos, dicho árbol esta definido de la siguiente forma:
+Para esto se definió una estructura auxiliar del tipo árbol, que permite modelar los distintos caminos en una única estructura de datos, dicho árbol esta definido de la siguiente forma:
 
-------
+~~~~~~~~~~~~~~~~
 { 'match'  : None,
    'insert' : None,
    'delete' : None,
    'val-a'  : None,
    'val-b'  : None }
-------
-Donde match, insert y delete son nodos hijos del árbol y val-a y val-b son los dos valores del alineamiento para cada secuencia del par. Esto permite armar un árbol inverso donde la raíz del arbol es la última celda 
+~~~~~~~~~~~~~~~~
+
+Donde match, insert y delete son nodos hijos del árbol y val-a y val-b son los dos valores del alineamiento para cada secuencia del par. Esto permite armar un árbol inverso donde la raíz del árbol es la última celda 
 del alineamiento global y los hijos del nodo son las celdas desde donde se llegó al mejor camino.
 
-3 Visualización
+**3 Visualización**
 
-Para la visualización de los caminos se desarrollo un algoritmo recursivo para imprimir el árbol, donde se ven las distintas alternativas de alineamiento, como se observa en el siguiente output del programa:
+Para la visualización de los caminos se desarrollo un algoritmo recursivo para imprimir el árbol, donde se ven las distintas alternativas de alineamiento, como se observa en la siguiente salida del programa:
 
--------
+~~~~~~~~~~~~~~~~
 Sequences possible alignments tree:
    * 
      = L/L
@@ -130,9 +129,9 @@ Sequences possible alignments tree:
                |     + -/A
                  + -/A
                      = A/A
----------
+~~~~~~~~~~~~~~~~
 
-Cada nodo del árbol despliega la pareja de nucléotidos para cada secuencia y un codigo para indicar si fue match (=) insert(+) o delete(-). En el caso anterior donde se alinearon las secuencias ARYL y AARYL el árbol muestra claramente que se puede realizar el insert de la nueva A tanto en a primera como en la segunda posición obteniendo el mismo costo final.
+Cada nodo del árbol despliega la pareja de nucleótidos para cada secuencia y un código para indicar si fue match (=) insert(+) o delete(-). En el caso anterior donde se alinearon las secuencias ARYL y AARYL el árbol muestra claramente que se puede realizar el insert de la nueva A tanto en a primera como en la segunda posición obteniendo el mismo costo final.
 
 
 Problema 2, comparación de algoritmos de MSA
@@ -141,11 +140,12 @@ Problema 2, comparación de algoritmos de MSA
 Resumen
 -------------
 Para el problema 2, se desarrolló un script en lenguaje Clojure que recorra todas las secuencias de BaliBase2 y para cada una ejecute los algoritmos seleccionados.
-Luego, con los alineamientos obtenidos, se obtuvo un score de comparación contra los alineamientos de referencia utilizando el programa bali_base, provisto también 
-dentro de la base.
 
-Con los scores obtenidos se generó un archivo `csv` que se importó en `R` para su análisis, donde se confirmó que los mejores resultados son obtenidos con el algoritmo
-T-Coffee que es a su vez el de mayor costo computacional.
+Luego, con los alineamientos obtenidos, se obtuvo un score de comparación contra los alineamientos de referencia utilizando el programa bali_base, provisto también 
+dentro de la base de alineamientos de referencia.
+
+Con los scores obtenidos, se generó un archivo `csv` que se importó en `R` para su análisis, donde se confirmó que los mejores resultados son obtenidos con el algoritmo
+T-Coffee, que es a su vez el de mayor costo computacional.
 
 Se detectaron varios problemas inclusive en los datos publicados en el benchmark que se detallan en el informe.
 
@@ -159,7 +159,8 @@ segundo paso en donde el alineamiento es generado agregando las secuencias al al
 como neighbor-joining o UPGMA, y puede usar distancias basadas en el número de sub-secuencias de dos letras idénticas.
 
 El otro conjunto de métodos que producen alineamientos múltiples reduciendo los errores inherentes al proceso de alineamiento progresivo son los clasificados como `iterativos`, estos funcionan
-de forma similar a los progresivos pero de forma repetida vuelven a alinear las secuencias iniciales al tiempo que agregan nuevas secuencias al alineamiento multiple que va creciendo.
+de forma similar a los progresivos, pero de forma repetida vuelven a alinear las secuencias iniciales al tiempo que agregan nuevas secuencias al alineamiento multiple que va creciendo.
+
 Uno de los problemas de los alineamientos progresivos es que son fuertemente dependientes en el alineamiento inicial, ya que una vez que dichas secuencias son incorporadas nunca vuelven 
 a considerarse nuevamente. En contraste, los métodos iterativos pueden volver a alineamientos de a pares calculados previamente.
 
@@ -169,32 +170,45 @@ De los más populares de la familia de alineamientos progresivos, se utilizó la
 alineamiento parcial de forma tal de bajarle el peso a las secuencias casi duplicadas y subirles el peso a las más divergentes.
 Luego las matrices de substitución de aminoácidos son cambiadas en las diferentes etapas de acuerdo a la divergencia de las secuencias siendo alineadas [14].
 
+El programa fue bajado [del siguiente sitio][clustalw2].
+
 **Dialign**
 
 Dialign es uno de los algoritmos iterativos.
+
 Este algoritmo toma un encare inusual de enfocarse en alineamientos locales entre sub-segmentos o secuencias de motivos sin introducir penalización por gaps [15].
 El alineamiento de motivos individuales es entonces obtenido con una representación matricial similar a una dot-matrix en un alineamiento de a pares.
+
+El programa fue bajado [del siguiente sitio][dialign].
 
 **Poa**
 
 POA (Partial Order alignment) es un método que utiliza HMM (Hidden Markov Models) como modelo probabilistico para asignar probabilidades a todas las posibles
 combinaciones de gaps, matches y mismatches para determinar el alineamiento múltiple más probable.
+
 Los modelos basados en HMM ofrecen una ventaja significante en costo computacional especialmente en secuencias que tienen regiones superpuestas. [16]
+
+El programa fue bajado [del siguiente sitio][poa].
 
 **T-Coffee**
 
 Es otro alineamiento progresivo bastante común, mas lento que Clustal y sus derivados pero que generalmente produce alineamientos más exactos para secuencias distantes.
+
 T-Coffee utiliza la salida de Clustal y la de otro programa de alineamiento local llamado LALIGN, que encuentra múltiples regiones de alineamiento local entre dos secuencias.
 El alineamiento resultante y árbol filogenético son usados como guía para producir factores de peso mas exactos.
+
+El programa fue bajado [del siguiente sitio][tcoffee].
+
 
 Estrategia
 -------------
 
 Para resolver el problema se desarrolló un script en el lenguaje Clojure con el propósito de ejecutar los distintos algoritmos contra las diferentes secuencias.
+El script se puede encontrar en el directorio `multiple_seq_aligner` del entregable y también publicado de forma abierta [en github][gh clj].
 
 El script itera por todos los archivos `fasta` disponibles en BaliBase2 
 
--------
+~~~~~~~~~~~~~~~~
 (defn fasta-map 
   []
   (println "Building fasta map")
@@ -204,11 +218,11 @@ El script itera por todos los archivos `fasta` disponibles en BaliBase2
     (reduce (fn [hm f] 
               (let [key (re-find #"^[^.]+" f)]
                 (assoc hm key (str path "/" f)))) {} fastas)))
------
+~~~~~~~~~~~~~~~~
 
 Y ejecuta para cada uno el alineamiento de las secuencias contenidas.
 
------
+~~~~~~~~~~~~~~~~
 (defn align-sequences
   [fastas algorithm]
   (reduce (fn [hm a] 
@@ -220,14 +234,14 @@ Y ejecuta para cada uno el alineamiento de las secuencias contenidas.
                   response {:msf-file msf-file
                             :time (- stop-time start-time)}]
               (assoc hm key response))) {} fastas))
----
+~~~~~~~~~~~~~~~~
 
 Dicha función utiliza funciones de primer orden recibiendo por parámetro la función con el algoritmo a ejecutar, cada algoritmo genera un archivo en formato `m/f` con el resultado 
 y guarda también el tiempo de ejecución del mismo.
 
 Cada programa se define en una función diferente donde se configura según las particularidades de ejecución del mismo
 
------
+~~~~~~~~~~~~~~~~
 (defn dialign
   [sequence-file file-name output-dir]
   (println "Building dialign alignments...")
@@ -238,7 +252,7 @@ Cada programa se define en una función diferente donde se configura según las 
         response (exec-script (command))]
     (when (= "" (:out response))
       (format "%s/%s_dialign.ms" output-dir file-name))))
----
+~~~~~~~~~~~~~~~~
 
 En el caso anterior de dialign por ejemplo el programa necesita tener disponible la variable de entorno DIALIGN2_DIR con el path a donde están ubicadas las matrices blosum y demás.
 
@@ -247,7 +261,7 @@ se convierte el resultado en formato `clustal` a formato `msf` antes de retornar
 
 Como salida genera un archivo `csv` con los distintos escores de bali score y tiempos de ejecución para cada archivo fasta analizado:
 
--------
+~~~~~~~~~~~~~~~~
 "referid","testid","seqid","algorithm","sp","tc","time"
 "ref8","test","ptga_2_ref8","tcoffee","0.790","0.576","19307.953"
 "ref8","test","ptga_2_ref8","dialign","0.558","0.214","15398.157"
@@ -264,7 +278,7 @@ Como salida genera un archivo `csv` con los distintos escores de bali score y ti
 "ref6","test_1a","dead_ref6","tcoffee","","","27024.809"
 "ref6","test_1a","dead_ref6","dialign","","","15420.384"
 "ref6","test_1a","dead_ref6","poa","","","2946.124"
-------
+~~~~~~~~~~~~~~~~
 
 Las líneas que se encuentran vacías, por ejemplo `dead_ref6` son consecuencia de lo explicado en el punto 3 de la sección `Problemas encontrados`
 
@@ -284,15 +298,15 @@ El programa bali_score, que varía para las diferentes versiones de BaliBase fal
 
 Por ejemplo la secuencia `O60072_2` en el archivo `BAliBASE2/references/ref6/test_1a/dead_ref6.msf` es de largo 1423
 
--------
+~~~~~~~~~~~~~~~~
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------LPITALHDP-VLEGICAK-RFSFFNAVQTQFFHTIYHTDTNIFVGAPTGSGKTMAAELATWRALHNYP-----------------KSKVVYIAPMKALVKERVKDWGHRLVEPMGISMIELTG-DTNPDVKAVTNANIIITTPEKWDGITRSW-KSRKYVQDVSLIILDEIHLLGSD-RGPVLEMIVSRMNYVASQTNKKVRVLGLSTAVANANDLANWLNI--RDGLFNFRHSVRPVPLEIYIDGFPGR-AYCPRMMSMNKPAFQAIKTHS---PTQPVLIFVSSRRQTRLTAKDLIAFCGLEDNPRRFLYM--DEEELE--MIVSEVEDKSLKLALPFGIALHHAGLTENDRKISEELFVNNKVQILIATSTLAWGVNTPAHLVIVKGTEYYDAKIGGYKDMDLTDVLQMLGRAGRPQFDNS-GVARIFVQDIKKSFYKHFLHSGFPVESYLHKVLDNHLNAEIATGTIDCIQGAMDFLTCTYFYRRVHQNPVYYGADGDDQKSIDTYLSKLVVTAFNELEKSACIYRVN----------------EETYAPTTLGRIVSYYYLFHTTIRNFVQKITENAEFDLALQLLAEASEFDDLAIRHNEDLINIEINKSLKYSAAC-----LNLPMVDAHVKAFILTQAHMARLKLPVDDYVTDTSTVLDQVIRIIQSYIDVSAELGYSHVCLQYISLMQCLKQACYPSEIYRASLPGLNASSEKEARD-----YLNKFAGNKTDELYQMLCNDPNVFDIESLVNSLISYPKMNI-------------------EVSQSSSDKLLLY---LRRLNQPLNP-------------DFYIFAPLFPKPQ-SEGFFVLIIDSETQELFAIRRASFAGRRNDDSIRLSLRISMDIPPTCRNRNVKVMVVCDGYPLIYEHKIVLMI-------------------
--------
+~~~~~~~~~~~~~~~~
 
 Mientras que bali_score2.c tiene definido como largo máximo solamente 1000:
 
------
+~~~~~~~~~~~~~~~~
 #define MAXLEN 1000
-------
+~~~~~~~~~~~~~~~~
 
 Esto da origen a problemas de stock overflow y corrupción de memoria cuando se ejecuta la comparación.
 
@@ -313,7 +327,7 @@ Un caso concreto es el del archivo `BAliBASE2/fastas/ref6/test_1a/dead_ref6.tfa`
 
 Mientras que los aineamientos de referencia en `BAliBASE2/references/ref6/test_1a/dead_ref6.msf` son 14:
 
-`````
+~~~~~~~~~~~~~~~~
 MSF: 1423  Type: P    Check:   550   ..
   6 
   7  Name: BRR2_YEAST_1 oo  Len: 1423  Check:  9406  Weight:  10.0
@@ -330,13 +344,13 @@ MSF: 1423  Type: P    Check:   550   ..
  18  Name: P53327_2 oo  Len: 1423  Check:  6971  Weight:  10.0
  19  Name: O60072_1 oo  Len: 1423  Check:  1785  Weight:  10.0
  20  Name: O60072_2 oo  Len: 1423  Check:     0  Weight:  10.0
-````
+~~~~~~~~~~~~~~~~
 
 Lo que genera el siguiente error del bali_score al querer compararlos:
 
-------
+~~~~~~~~~~~~~~~~
 Error: 14 sequences in /BAliBASE2/references/ref6/test_1a/dead_ref6.msf and 7 in ./results/ref6_test_1a_dead_ref6_clustalw2.msf
-------
+~~~~~~~~~~~~~~~~
 
 Análisis
 -----------
@@ -348,13 +362,13 @@ Para el análisis de resultados se importo el archivo `csv` en R y para las dist
 
 El script básico de análisis en R es el siguiente:
 
------
+~~~~~~~~~~~~~~~~
 scores <- read.csv("multiple_seq_aligner/results/scores.csv")
 scores <- na.omit(scores)
 ref1 <- subset(scores, scores$referid == "ref1")
 bwplot(algorithm~sp, data=ref1, panel=panel.bpplot, datadensity=TRUE,ylab="algoritmo", xlab="score")
 bwplot(algorithm~time, data=ref1, panel=panel.bpplot, datadensity=TRUE,ylab="algoritmo", xlab="tiempo de ejecución")
------
+~~~~~~~~~~~~~~~~
 
 Donde la función bwplot nos permite visualizar no solamente el promedio para cada resultado sino que la propia distribución de los mismos.
 
@@ -398,9 +412,18 @@ que Dialign pese a tener menor costo computacional.
 A su vez también dentro de lo esperado cuanto más discímiles son las secuencias a alinear(menos de 25% idénticas para la referencia 3) el resultado obtenido es peor, y cuanto
 mas similares son se obtienen mejores resultados (referencia 1).
 
+Algoritmos como T-Coffee si bien generan buenos alineamientos son solamente aconsejables para alineamientos chicos por su alto costo computacional. 
+
+Vale aclarar que los distintos problemas encontrados tanto con las secuencias como con el programa de scoring genera ciertas dudas sobre la prolijidad y confiabilidad de
+los datos y algoritmos publicados en BaliBase2, por lo que si bien el ejercicio sirve los datos deben tomarse con cautela.
 
 
-
+[gh py]: https://github.com/guilespi/bio-sequence-alignments
+[gh clj]: https://github.com/guilespi/MSA-Reference-Tests
+[tcoffee]: www.tcoffee.org/Projects/tcoffee/#DOWNLOAD
+[poa]: http://www.mybiosoftware.com/alignment/719
+[clustalw2]: http://www.clustal.org/clustal2/
+[dialign]: http://dialign.gobics.de/
 [14]: CLUSTAL W: improving the sensitivity of progressive... http://www.ncbi.nlm.nih.gov/pmc/articles/PMC308517/pdf/nar00046-0131.pdf
 [15] : Brudno M, Chapman M, Göttgens B, Batzoglou S, Morgenstern B (2003). "Fast and sensitive multiple alignment of large genomic sequences". BMC Bioinformatics 4: 66.
 [16]: Mount DM. (2004). Bioinformatics: Sequence and Genome Analysis 2nd ed. Cold Spring Harbor Laboratory Press: Cold Spring Harbor, NY
