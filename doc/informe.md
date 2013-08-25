@@ -345,7 +345,23 @@ Mientras que bali_score2.c tiene definido como largo máximo solamente 1000:
 #define MAXLEN 1000
 ~~~~~~~~~~~~~~~~
 
-Esto da origen a problemas de stock overflow y corrupción de memoria cuando se ejecuta la comparación.
+Esto da origen a problemas de stock overflow y corrupción de memoria cuando se ejecuta la comparación, ya que en la función readmsf donde se
+"rearman" las secuencias el vector `seq` está inicializado en `MAXLEN+1`.
+
+~~~~~~~~~~~~~~~~
+void readmsf(FILE *fin) {
+static char line[MAXLINE+1];
+char seq[MAXLEN+1];
+...
+for(i=k;i<=MAXLINE;i++) {
+	c=line[i];                                                                                                                                      
+	if(c == '.' || c == '~' ) c = '-';
+	if(c == '*') c = 'X';
+	if(c == '\n' || c == EOS) break; /* EOL */
+	if(isalpha(c) || c=='-') seq[len++]=c;
+}
+..
+~~~~~~~~~~~~~~~~
 
 Esto fue solucionado como forma de asegurar que se estaba usando el mismo programa de scoring que la base de referencia.
 
