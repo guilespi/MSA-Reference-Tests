@@ -253,7 +253,7 @@ Y ejecuta para cada uno el alineamiento de las secuencias contenidas.
               (assoc hm key response))) {} fastas))
 ~~~~~~~~~~~~~~~~
 
-Dicha función utiliza funciones de primer orden recibiendo por parámetro la función con el algoritmo a ejecutar, cada algoritmo genera un archivo en formato `m/f` con el resultado 
+Dicha función utiliza funciones de primer orden recibiendo por parámetro la función con el algoritmo a ejecutar, cada algoritmo genera un archivo en formato `msf` con el resultado 
 y guarda también el tiempo de ejecución del mismo.
 
 Cada programa se define en una función diferente donde se configura según las particularidades de ejecución del mismo
