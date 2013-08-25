@@ -5,7 +5,12 @@
 
 (def basedir "/Users/guilespi/Documents/Development/interrupted/bioinformatics/")
 (def balibase (str basedir "BAliBASE2"))
-(def baliscore "")
+(def baliscorer-path (str basedir "tools/bali_score"))
+(def tcoffee-path (str basedir "tools/tcoffee/Version_9.03.r1318/bin/t_coffee"))
+(def dialign-path (str basedir "tools/dialign_package"))
+(def clustal-path (str basedir "tools/clustalw-2.1-macosx/clustalw2"))
+(def poa-path (str basedir "tools/poaV2"))
+(def output-dir "results")
 
 (defmacro find-cmd
   [base-dir pattern]
@@ -47,8 +52,6 @@
               (let [key (re-find #"^[^.]+" f)]
                 (assoc hm key (str path "/" f)))) {} references)))
 
-(def dialign-path (str basedir "tools/dialign_package"))
-(def output-dir "results")
 
 (defn dialign
   [sequence-file file-name output-dir]
@@ -73,7 +76,6 @@
                             :time (- stop-time start-time)}]
               (assoc hm key response))) {} fastas))
 
-(def tcoffee-path (str basedir "tools/tcoffee/Version_9.03.r1318/bin/t_coffee"))
 
 (defn clustal-to-msf
   [input-file output-file]
@@ -94,7 +96,6 @@
     (when (= 0 (:exit response))
       (str output-file ".msf"))))
 
-(def poa-path (str basedir "tools/poaV2"))
 (defn poa 
   [sequence-file file-name output-dir]
   (let [tool (str poa-path "/poa")
@@ -108,7 +109,6 @@
         (when (clustal-to-msf output-file msf-file)
           msf-file)))))
 
-(def clustal-path (str basedir "tools/clustalw-2.1-macosx/clustalw2"))
 (defn clustalw2 
   [sequence-file file-name output-dir]
   (let [tool clustal-path
@@ -119,7 +119,6 @@
     (when (= 0 (:exit response))
       output-file)))
 
-(def baliscorer-path (str basedir "tools/bali_score"))
 (defn calculate-bali-score
   [reference alignment]
   (let [command (format "%s %s %s" 
@@ -181,7 +180,7 @@
   (let [fastas (fasta-map)
         references (reference-map)
         ;some fastas have no corresponding reference
-        valid-fastas (take 3 (select-keys fastas (keys references)))
+        valid-fastas (select-keys fastas (keys references))
         dialign-res (align-sequences valid-fastas dialign)
         clustalw-res (align-sequences valid-fastas clustalw2)
         poa-res (align-sequences valid-fastas poa)
