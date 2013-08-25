@@ -17,8 +17,8 @@ ref8 <- subset(scores, scores$referid == "ref8")
 
 
 #comparison of scores for the different references
-bwplot(algorithm~sp, data=ref1, panel=panel.bwplot, datadensity=TRUE,ylab="algoritmo", xlab="score", main="results ref1")
-bwplot(algorithm~sp, data=ref2, panel=panel.bwplot, datadensity=TRUE,ylab="algoritmo", xlab="score", main="results ref2")
+bwplot(algorithm~sp, data=ref1, panel=panel.bpplot, datadensity=TRUE,ylab="algoritmo", xlab="score", main="results ref1")
+bwplot(algorithm~sp, data=ref2, panel=panel.bpplot, datadensity=TRUE,ylab="algoritmo", xlab="score", main="results ref2")
 bwplot(algorithm~sp, data=ref3, panel=panel.bpplot, datadensity=TRUE,ylab="algoritmo", xlab="score", main="results ref3")
 bwplot(algorithm~sp, data=ref4, panel=panel.bpplot, datadensity=TRUE,ylab="algoritmo", xlab="score", main="results ref4")
 bwplot(algorithm~sp, data=ref5, panel=panel.bpplot, datadensity=TRUE,ylab="algoritmo", xlab="score", main="results ref5")
