@@ -441,7 +441,7 @@ Donde la función `bwplot` nos permite visualizar no solamente el promedio para 
 **Referencia 1**
 
 La referencia 1 está compuesta por secuencias equidistantes con varios niveles de conservación.
-Para este caso observamos que si bien los algoritmos de mayor costo computacional obtienen mejores resultados, todos perforan relativamente bien.
+Para este caso observamos que si bien los algoritmos de mayor costo computacional obtienen mejores resultados, todos performan relativamente bien.
 
 ![resultados referencia 1](images/scores_ref1.png "Resultados para referencia 1")\
 
